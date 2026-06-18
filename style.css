@@ -99,6 +99,35 @@ input:focus-visible,
   color: var(--ink-soft);
 }
 
+.top-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.top-nav-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.top-nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.top-nav-btn.active {
+  background: var(--accent);
+  border-color: var(--accent-dark);
+  color: #FFFFFF;
+}
+
 .browser-pill {
   font-size: 0.78rem;
   font-family: var(--font-mono);
@@ -810,6 +839,49 @@ main {
   flex-wrap: wrap;
 }
 
+/* ---------- About panel ---------- */
+
+.about-panel {
+  text-align: left;
+}
+
+.about-panel h2 {
+  margin: 0 0 14px 0;
+  font-size: 1.1rem;
+}
+
+.about-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+}
+
+.about-role,
+.about-location {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  margin: 0 0 2px 0;
+}
+
+.about-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.about-links a {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--accent-dark);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-soft);
+}
+
+.about-links a:hover {
+  border-bottom-color: var(--accent-dark);
+}
+
 /* ===========================================================
    Responsive breakpoints
    =========================================================== */
@@ -833,6 +905,14 @@ main {
 @media (max-width: 540px) {
   .topbar {
     flex-direction: column;
+  }
+
+  .top-nav {
+    width: 100%;
+  }
+
+  .top-nav-btn {
+    flex: 1;
   }
 
   .browser-pill {

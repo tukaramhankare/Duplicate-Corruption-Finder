@@ -166,6 +166,10 @@ const cleanupState = {
 
 const el = {
   browserPill: document.getElementById("browserPill"),
+  navScanner: document.getElementById("navScanner"),
+  navAbout: document.getElementById("navAbout"),
+  scannerView: document.getElementById("scannerView"),
+  aboutView: document.getElementById("aboutView"),
   pickFolderBtn: document.getElementById("pickFolderBtn"),
   dropZone: document.getElementById("dropZone"),
   fileInput: document.getElementById("fileInput"),
@@ -249,6 +253,19 @@ function initBrowserPill() {
     el.browserPill.classList.add("limited");
   }
 }
+
+/* ---------- Top nav: Scanner / About Us ---------- */
+
+function switchTopNav(target) {
+  const showScanner = target === "scanner";
+  el.scannerView.hidden = !showScanner;
+  el.aboutView.hidden = showScanner;
+  el.navScanner.classList.toggle("active", showScanner);
+  el.navAbout.classList.toggle("active", !showScanner);
+}
+
+el.navScanner.addEventListener("click", () => switchTopNav("scanner"));
+el.navAbout.addEventListener("click", () => switchTopNav("about"));
 
 /* ---------- Toast ---------- */
 

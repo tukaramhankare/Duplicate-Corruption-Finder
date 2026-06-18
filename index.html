@@ -16,10 +16,16 @@
       <p class="brand-sub">Runs fully offline in this tab. Nothing leaves your device.</p>
     </div>
   </div>
+  <nav class="top-nav" aria-label="Primary">
+    <button class="top-nav-btn active" id="navScanner" type="button">Scanner</button>
+    <button class="top-nav-btn" id="navAbout" type="button">About Us</button>
+  </nav>
   <div class="browser-pill" id="browserPill">Checking browser capabilities…</div>
 </header>
 
 <main>
+
+  <div id="scannerView">
 
   <section class="panel intake" id="intakePanel">
     <div class="intake-grid">
@@ -173,6 +179,19 @@
     <p class="empty-state" id="emptyDuplicates" hidden>No duplicate files found. Every file's content is unique.</p>
     <p class="empty-state" id="emptyCorrupted" hidden>No files were flagged. Header checks passed for everything scanned.</p>
     <p class="empty-state" id="emptyHistoryMatches" hidden>None of these files match anything in your saved history.</p>
+  </section>
+
+  </div>
+
+  <section class="panel about-panel" id="aboutView" hidden>
+    <h2>About Us</h2>
+    <p class="about-name">Tukaram Hankare</p>
+    <p class="about-role">Farmer, Coder, Web Developer</p>
+    <p class="about-location">Solapur, Maharashtra, India</p>
+    <div class="about-links">
+      <a href="https://github.com/tukaramhankare" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://tukaramhankare.github.io/master-package" target="_blank" rel="noopener noreferrer">Project Showcase</a>
+    </div>
   </section>
 
 </main>
