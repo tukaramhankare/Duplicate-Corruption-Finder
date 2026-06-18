@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FileFingerprint Scanner — Duplicate &amp; Corruption Finder</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">⌗</span>
+    <div class="brand-text">
+      <h1>Duplicate &amp; Corruption Finder</h1>
+      <p class="brand-sub">Runs fully offline in this tab. Nothing leaves your device.</p>
+    </div>
+  </div>
+  <div class="browser-pill" id="browserPill">Checking browser capabilities…</div>
+</header>
+
+<main>
+
+  <section class="panel intake" id="intakePanel">
+    <div class="intake-grid">
+
+      <button class="intake-card" id="pickFolderBtn" type="button">
+        <span class="intake-icon" aria-hidden="true">📁</span>
+        <span class="intake-title">Select a folder</span>
+        <span class="intake-desc">Scans every file inside it. Full delete support on Chromium browsers.</span>
+      </button>
+
+      <div class="intake-card dropzone" id="dropZone">
+        <span class="intake-icon" aria-hidden="true">⇩</span>
+        <span class="intake-title">Drop files here</span>
+        <span class="intake-desc">Or click to choose files. Delete works only if your browser grants a removable handle.</span>
+        <input type="file" id="fileInput" multiple hidden>
+      </div>
+
+    </div>
+
+    <div class="options-row">
+      <label class="opt">
+        <input type="checkbox" id="optMD5">
+        Also compute MD5 (slower, for cross-checking only — SHA-256 is used for matching)
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="optCorruption" checked>
+        Run header-based corruption check
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="optCheckHistory" checked>
+        Check every file against saved history (this device)
+      </label>
+    </div>
+
+    <div class="history-bar">
+      <div class="history-bar-info">
+        <span class="history-count" id="historyCount">0</span> hashes saved on this device
+        <span class="history-updated" id="historyUpdated"></span>
+      </div>
+      <div class="history-bar-actions">
+        <button class="btn-small" id="viewHistoryBtn" type="button">View history</button>
+        <button class="btn-small" id="importJsonBtn" type="button">Import JSON for cleanup</button>
+        <input type="file" id="jsonImportInput" accept="application/json" hidden>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel history-panel" id="historyPanel" hidden>
+    <div class="history-panel-head">
+      <h2>Saved hash history</h2>
+      <button class="btn-ghost" id="closeHistoryBtn" type="button">Close</button>
+    </div>
+    <p class="history-panel-desc">
+      Every file you've scanned on this device is remembered here by its SHA-256 hash and filename,
+      so future scans can flag files you've already processed before — even after you close the tab.
+      This never leaves your device unless you export it.
+    </p>
+    <div class="history-table-wrap">
+      <table class="history-table" id="historyTable">
+        <thead>
+          <tr><th>Filename</th><th>SHA-256</th><th>Size</th><th>First seen</th></tr>
+        </thead>
+        <tbody id="historyTableBody"></tbody>
+      </table>
+    </div>
+    <p class="empty-state" id="emptyHistory" hidden>No history saved yet. Run a scan to start building it.</p>
+    <div class="history-panel-actions">
+      <button class="btn-secondary" id="exportHistoryBtn" type="button">Export history (.json)</button>
+      <button class="btn-danger" id="clearHistoryBtn" type="button">Clear all history</button>
+    </div>
+  </section>
+
+  <section class="panel cleanup-panel" id="cleanupPanel" hidden>
+    <div class="history-panel-head">
+      <h2>Clean up using imported JSON</h2>
+      <button class="btn-ghost" id="closeCleanupBtn" type="button">Close</button>
+    </div>
+    <p class="history-panel-desc" id="cleanupDesc">
+      Select the folder these records came from, then re-confirm each match before anything is deleted.
+      Only files whose live content hash matches the JSON exactly will be eligible for deletion.
+    </p>
+    <button class="btn-secondary" id="cleanupPickFolderBtn" type="button">Select folder to check</button>
+
+    <div class="cleanup-toolbar" id="cleanupToolbar" hidden>
+      <label class="opt cleanup-select-all">
+        <input type="checkbox" id="cleanupSelectAll">
+        Select all
+      </label>
+      <div class="cleanup-toolbar-actions">
+        <button class="btn-secondary" id="cleanupBulkDeleteBtn" type="button" disabled>Delete selected</button>
+        <button class="btn-danger" id="cleanupEraseAllBtn" type="button">Erase entire matches</button>
+      </div>
+    </div>
+
+    <div id="cleanupResults"></div>
+    <p class="empty-state" id="cleanupEmpty" hidden>No files in the selected folder matched the imported records.</p>
+  </section>
+
+  <section class="panel progress-panel" id="progressPanel" hidden>
+    <div class="progress-head">
+      <span id="progressLabel">Scanning…</span>
+      <span id="progressCount">0 / 0</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-file" id="progressFile"></p>
+    <button class="btn-ghost" id="cancelScanBtn" type="button">Cancel scan</button>
+  </section>
+
+  <section class="panel summary-panel" id="summaryPanel" hidden>
+    <div class="summary-stat">
+      <span class="summary-num" id="statTotal">0</span>
+      <span class="summary-label">files scanned</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-num" id="statGroups">0</span>
+      <span class="summary-label">duplicate groups</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-num" id="statWasted">0 B</span>
+      <span class="summary-label">space reclaimable</span>
+    </div>
+    <div class="summary-stat">
+      <span class="summary-num" id="statCorrupt">0</span>
+      <span class="summary-label">flagged as corrupted</span>
+    </div>
+    <div class="summary-actions">
+      <button class="btn-secondary" id="exportReportBtn" type="button">Export report (.json)</button>
+      <button class="btn-secondary" id="exportCsvBtn" type="button">Export report (.csv)</button>
+      <button class="btn-ghost" id="resetBtn" type="button">Start a new scan</button>
+    </div>
+  </section>
+
+  <section class="panel results-panel" id="resultsPanel" hidden>
+    <div class="results-tabs">
+      <button class="tab-btn active" id="tabDuplicates" type="button">Duplicates</button>
+      <button class="tab-btn" id="tabCorrupted" type="button">Flagged files</button>
+      <button class="tab-btn" id="tabHistoryMatches" type="button">Seen before</button>
+    </div>
+
+    <div class="results-toolbar" id="duplicatesToolbar">
+      <span id="dupToolbarHint">Each card below is one set of identical files.</span>
+      <button class="btn-danger" id="bulkDeleteBtn" type="button" disabled>Delete selected</button>
+    </div>
+
+    <div id="duplicatesView"></div>
+    <div id="corruptedView" hidden></div>
+    <div id="historyMatchesView" hidden></div>
+
+    <p class="empty-state" id="emptyDuplicates" hidden>No duplicate files found. Every file's content is unique.</p>
+    <p class="empty-state" id="emptyCorrupted" hidden>No files were flagged. Header checks passed for everything scanned.</p>
+    <p class="empty-state" id="emptyHistoryMatches" hidden>None of these files match anything in your saved history.</p>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal-overlay" id="infoModalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+    <h2 id="infoModalTitle">Why can't this delete here?</h2>
+    <p id="infoModalBody"></p>
+    <button class="btn-secondary" id="infoModalClose" type="button">Got it</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <h2 id="confirmModalTitle">Confirm deletion</h2>
+    <p id="confirmModalBody"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="confirmModalCancel" type="button">Cancel</button>
+      <button class="btn-danger" id="confirmModalProceed" type="button">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
