@@ -60,4 +60,6 @@ Plain HTML, CSS, and JavaScript. No frameworks, no build tools, no external depe
 
 ## License
 
-Add a license of your choice (MIT is a common pick for tools like this) and reference it here.
+It is published under Apache License 2.0.
+
+Copyright 2026 Tukaram Hankare
